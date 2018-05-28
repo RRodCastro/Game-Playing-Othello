@@ -1,8 +1,9 @@
 import io from 'socket.io-client';
-import { getValidMoves, parseBoard, makeFlips } from './moves';
+import { parseBoard } from './moves';
+import { alphaBetaSearch } from './ia';
 
 const socket = io('http://localhost:3000'),
-    userName = 'RodCastro' + Math.floor(Math.random() * 40),
+    userName = 'RodCastro' + Math.floor(Math.random() * 100),
     tournamentID = 142857;
 
 socket.on('connect', function () {
@@ -23,14 +24,16 @@ socket.on('ready', function (data) {
     const board = data.board;
     const movementNumber = data.movementNumber
     // TODO: Make a 'smart' move
-    // mov = Math.floor(Math.random() * 64) + 0;
-    const mov = getValidMoves(board, playerTurnID).slice(-1)[0]
-    const test = mov[0].split(',')
-    const new_mov = 8 * parseInt(test[0]) + parseInt(test[1])
-    if (movementNumber == 0 || movementNumber == 1 || movementNumber === 2 || movementNumber === 3 || movementNumber === 4 || movementNumber === 5) {
-        // console.log(makeFlips(parseBoard(board), mov, playerTurnID));
+    let new_mov;
+    new_mov = Math.floor(Math.random() * 64) + 0;
 
-    }
+
+    // const new_board = parseBoard(board);
+    // console.log("thinking...")
+    // const mov = alphaBetaSearch(new_board, playerTurnID, playerTurnID, 0, -Infinity, Infinity);
+    // const test = mov.movement[0].split(',')
+    // new_mov = 8 * parseInt(test[0]) + parseInt(test[1])
+    console.log(new_mov)
     socket.emit('play', {
         tournament_id: tournamentID,
         player_turn_id: playerTurnID,

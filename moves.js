@@ -1,18 +1,5 @@
+import { search_positions, players, bord_size } from './constants';
 
-const search_positions = {
-    up: { x: -1, y: 0 },
-    down: { x: 1, y: 0 },
-    left: { x: 0, y: -1 },
-    rigth: { x: 0, y: 1 },
-    upper_right: { x: -1, y: 1 },
-    upper_left: { x: -1, y: -1 },
-    bottom_right: { x: 1, y: 1 },
-    bottom_left: { x: 1, y: -1 }
-}
-const players = {
-    BLACK: 1,
-    WHITE: 2
-}
 const checkColorChange = (changeColor, board, opponent, x, y) => {
     return (!changeColor && board[x][y] === opponent);
 }
@@ -22,6 +9,10 @@ const checkEmpty = (changeColor, board, x, y, color) => {
 const checkColor = (changeColor, board, x, y, color) => {
     return (changeColor && board[x][y] === color)
 }
+export const getOpponent = (current_player) => {
+    return current_player === players.BLACK ? players.WHITE : players.BLACK
+}
+
 
 export const parseBoard = (board) => {
     let new_board = []
@@ -40,21 +31,22 @@ const getNextMove = (search_position, row, column, opponent, board) => {
     })
 }
 export const getValidMoves = (array_board, player) => {
-    const opponent = player === players.BLACK ? players.WHITE : players.BLACK
-    const board = parseBoard(array_board);
+    const opponent = getOpponent(player)
+    // const board = parseBoard(array_board);
+    const board = array_board
     const posible_moves = {};
-    board.map((_, row) => {
-        _.map((element, column) => {
+    for (let row = 0; row < 8; row++) {
+        for (let column = 0; column < 8; column++) {
+            const element = board[row][column]
             const legal_moves = isLegalMove(board, row, column, element, player, opponent);
             if (legal_moves.length > 0) {
                 // posible_moves.push(row * 8 +column)
                 posible_moves[`${row},${column}`] = legal_moves.join();
             }
-        })
-    })
+        }
+    }
     return Object.entries(posible_moves)
 }
-
 const isLegalMove = (board, row, column, element, player, opponent) => {
     // Ocupped position, nothing to do
     if (element !== 0) {
@@ -111,8 +103,7 @@ const checkDown = (row, column, board, color, opponent) => {
         if (check_empty) { return !check_empty }
         const check_color = checkColor(changeColor, board, x, column, color)
         if (check_color) { return check_color }
-        const change_color_check = checkColorChange(changeColor, board, opponent, x, column)
-        change_color_check ? changeColor = change_color_check : '';
+        checkColorChange(changeColor, board, opponent, x, column) ? changeColor = true : '';
     }
 
     return false;
@@ -125,8 +116,7 @@ const checkUp = (row, column, board, color, opponent) => {
         if (check_empty) { return !check_empty }
         const check_color = checkColor(changeColor, board, x, column, color)
         if (check_color) { return check_color }
-        const change_color_check = checkColorChange(changeColor, board, opponent, x, column)
-        change_color_check ? changeColor = change_color_check : '';
+        checkColorChange(changeColor, board, opponent, x, column) ? changeColor = true : '';
     }
 
     return false;
@@ -134,12 +124,9 @@ const checkUp = (row, column, board, color, opponent) => {
 const checkLeft = (row, column, board, color, opponent) => {
     let changeColor = false;
     for (let y = column - 1; y >= 0; y--) {
-        const check_empty = checkEmpty(changeColor, board, row, y, color)
-        if (check_empty) { return !check_empty }
-        const check_color = checkColor(changeColor, board, row, y, color)
-        if (check_color) { return check_color }
-        const change_color_check = checkColorChange(changeColor, board, opponent, row, y)
-        change_color_check ? changeColor = change_color_check : '';
+        if (checkEmpty(changeColor, board, row, y, color)) { return false }
+        if (checkColor(changeColor, board, row, y, color)) { return true }
+        checkColorChange(changeColor, board, opponent, row, y) ? changeColor = true : '';
     }
     return false;
 }
@@ -147,12 +134,9 @@ const checkLeft = (row, column, board, color, opponent) => {
 const checkRight = (row, column, board, color, opponent) => {
     let changeColor = false;
     for (let y = column + 1; y < 8; y++) {
-        const check_empty = checkEmpty(changeColor, board, row, y, color)
-        if (check_empty) { return !check_empty }
-        const check_color = checkColor(changeColor, board, row, y, color)
-        if (check_color) { return check_color }
-        const change_color_check = checkColorChange(changeColor, board, opponent, row, y)
-        change_color_check ? changeColor = change_color_check : '';
+        if (checkEmpty(changeColor, board, row, y, color)) { return false }
+        if (checkColor(changeColor, board, row, y, color)) { return true }
+        checkColorChange(changeColor, board, opponent, row, y) ? changeColor = true : '';
     }
     return false;
 }
@@ -160,12 +144,9 @@ const bottomLeft = (row, column, board, color, opponent) => {
     let changeColor = false;
     let y = column - 1;
     for (let x = row + 1; x < 8 && y >= 0; x++) {
-        const check_empty = checkEmpty(changeColor, board, x, y, color)
-        if (check_empty) { return !check_empty }
-        const check_color = checkColor(changeColor, board, x, y, color)
-        if (check_color) { return check_color }
-        const change_color_check = checkColorChange(changeColor, board, opponent, x, y)
-        change_color_check ? changeColor = change_color_check : '';
+        if (checkEmpty(changeColor, board, x, y, color)) { return false }
+        if (checkColor(changeColor, board, x, y, color)) { return true }
+        checkColorChange(changeColor, board, opponent, x, y) ? changeColor = true : '';
         y--;
     }
 
@@ -176,12 +157,9 @@ const bottomRight = (row, column, board, color, opponent) => {
     let changeColor = false;
     let y = column + 1;
     for (let x = row + 1; x < 8 && y < 8; x++) {
-        const check_empty = checkEmpty(changeColor, board, x, y, color)
-        if (check_empty) { return !check_empty }
-        const check_color = checkColor(changeColor, board, x, y, color)
-        if (check_color) { return check_color }
-        const change_color_check = checkColorChange(changeColor, board, opponent, x, y)
-        change_color_check ? changeColor = change_color_check : '';
+        if (checkEmpty(changeColor, board, x, y, color)) { return false }
+        if (checkColor(changeColor, board, x, y, color)) { return true }
+        checkColorChange(changeColor, board, opponent, x, y) ? changeColor = true : '';
         y++;
     }
 
@@ -192,12 +170,9 @@ const upperLeft = (row, column, board, color, opponent) => {
     let changeColor = false;
     let y = column - 1;
     for (let x = row - 1; x >= 0 && y >= 0; x--) {
-        const check_empty = checkEmpty(changeColor, board, x, y, color)
-        if (check_empty) { return !check_empty }
-        const check_color = checkColor(changeColor, board, x, y, color)
-        if (check_color) { return check_color }
-        const change_color_check = checkColorChange(changeColor, board, opponent, x, y)
-        change_color_check ? changeColor = change_color_check : '';
+        if (checkEmpty(changeColor, board, x, y, color)) { return false }
+        if (checkColor(changeColor, board, x, y, color)) { return true }
+        checkColorChange(changeColor, board, opponent, x, y) ? changeColor = true : '';
         y--;
     }
 
@@ -208,12 +183,9 @@ const upperRight = (row, column, board, color, opponent) => {
     let changeColor = false;
     let y = column + 1;
     for (let x = row - 1; x >= 0 && y > 0; x--) {
-        const check_empty = checkEmpty(changeColor, board, x, y, color)
-        if (check_empty) { return !check_empty }
-        const check_color = checkColor(changeColor, board, x, y, color)
-        if (check_color) { return check_color }
-        const change_color_check = checkColorChange(changeColor, board, opponent, x, y)
-        change_color_check ? changeColor = change_color_check : '';
+        if (checkEmpty(changeColor, board, x, y, color)) { return false }
+        if (checkColor(changeColor, board, x, y, color)) { return true }
+        checkColorChange(changeColor, board, opponent, x, y) ? changeColor = true : '';
         y++;
     }
     return false;
@@ -225,10 +197,11 @@ const searchFlips = (board, x, y, direction, player) => {
         x += direction.x
         y += direction.y
         flipped_positions.push([x, y])
+
         if (board[x][y] === player) {
             change_color = true
         }
-        if (!change_color) {
+        if (change_color) {
             return flipped_positions
         }
     }
@@ -251,4 +224,25 @@ export const makeFlips = (board, valid_movement, player) => {
         }
     })
     return flipped_board
+}
+export const totalPieces = (board, current_player) => {
+    let scenarios = []
+    const current_opponent = getOpponent(current_player)
+    let player = 0;
+    let opponent = 0
+    for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
+            const element = board[i][j]
+            if (element === current_player) {
+                player++
+            }
+            else if (element === current_opponent) {
+                opponent++
+            }
+        }
+    }
+    if (opponent === 0) {
+        return 64;
+    }
+    return player;
 }
