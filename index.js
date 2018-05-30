@@ -3,7 +3,7 @@ import { parseBoard } from './moves';
 import { alphaBetaSearch } from './ia';
 
 const socket = io('http://localhost:3000'),
-    userName = 'RodCastro' + Math.floor(Math.random() * 100),
+    userName = 'Random',
     tournamentID = 142857;
 
 socket.on('connect', function () {
@@ -23,16 +23,15 @@ socket.on('ready', function (data) {
     const playerTurnID = data.player_turn_id;
     const board = data.board;
     const movementNumber = data.movementNumber
-    // TODO: Make a 'smart' move
     let new_mov;
     new_mov = Math.floor(Math.random() * 64) + 0;
-
-
-    // const new_board = parseBoard(board);
-    // console.log("thinking...")
-    // const mov = alphaBetaSearch(new_board, playerTurnID, playerTurnID, 0, -Infinity, Infinity);
-    // const test = mov.movement[0].split(',')
-    // new_mov = 8 * parseInt(test[0]) + parseInt(test[1])
+    const new_board = parseBoard(board);
+    console.log(new_board)
+    console.log(playerTurnID)
+    console.log("thinking...")
+    const mov = alphaBetaSearch(new_board, playerTurnID, playerTurnID, 0, -Infinity, Infinity, movementNumber);
+    const test = mov.movement[0].split(',')
+    new_mov = 8 * parseInt(test[0]) + parseInt(test[1])
     console.log(new_mov)
     socket.emit('play', {
         tournament_id: tournamentID,

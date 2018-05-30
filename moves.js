@@ -229,6 +229,9 @@ export const totalPieces = (board, current_player) => {
     for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
             const element = board[i][j]
+            if (element === 0) {
+                continue;
+            }
             if (element === current_player) {
                 player++
             }
@@ -240,40 +243,55 @@ export const totalPieces = (board, current_player) => {
     return 100 * player / (player + opponent)
 }
 export const corners = (board, current_player) => {
-    const current_opponent = getOpponent(current_player)
+    const current_opponent = current_player
+    current_player = getOpponent(current_player)
     let player = 0;
     let opponent = 0;
     for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
             const element = board[i][j]
-            if (element === current_player &&
-                (i === 0 || i === 1 || i === 6 || i === 7)
-                && (j === 0 || j === 1 || j === 6 || j === 7)) {
-                player + 3
+            if (element === 0) {
+                continue;
             }
-            else if (element == current_player) {
-                player + 1;
+            if (
+                (i === 0 && j === 0) ||
+                (i === 0 && j === 7) ||
+                (i === 7 && j === 0) ||
+                (i === 7 && j === 7)) {
+                if (current_player === element) {
+                    player = player + 50;
+                } else {
+                    opponent = opponent + 50;
+                }
             }
-            if (element === current_opponent &&
-                (i === 0 || i === 1 || i === 6 || i === 7
-                    && (j === 0 || j === 1 || j === 6 || j === 7))) {
-                opponent + 3
+            if (i === 0 || i === 7 || j === 0 || j === 7) {
+                if (current_player === element) {
+                    player = player + 5;
+                }
+                else {
+                    opponent = opponent + 5;
+                }
             }
-            else if (element === current_opponent) {
-                opponent + 1
-            }
+            else {
+                if (element === current_player) {
+                    player++
+                }
+                else if (element === current_opponent) {
+                    opponent++
+                }
 
+            }
         }
     }
-    if (player + opponent > 0) {
-        return 100 * (player) / (player + opponent)
-    }
-    else {
+    if (player + opponent === 0) {
         return 0
     }
+    return 100 * (player) / (player + opponent);
 }
+
 export const mobility = (board, current_player) => {
-    const opponenet = getOpponent(current_player);
+    const opponenet = current_player;
+    current_player = getOpponent(current_player);
     const player_mobility = getValidMoves(board, current_player).length;
     const opponenet_mobility = getValidMoves(board, opponenet).length;
     if (player_mobility + opponenet_mobility !== 0) {
