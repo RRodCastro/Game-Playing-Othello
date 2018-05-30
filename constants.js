@@ -1,18 +1,19 @@
 
 export const search_positions = {
-    up: { x: -1, y: 0 },
-    down: { x: 1, y: 0 },
-    left: { x: 0, y: -1 },
-    rigth: { x: 0, y: 1 },
-    upper_right: { x: -1, y: 1 },
-    upper_left: { x: -1, y: -1 },
-    bottom_right: { x: 1, y: 1 },
-    bottom_left: { x: 1, y: -1 }
+    0: { x: -1, y: 0 },
+    1: { x: 1, y: 0 },
+    2: { x: 0, y: -1 },
+    3: { x: 0, y: 1 },
+    4: { x: -1, y: 1 },
+    5: { x: -1, y: -1 },
+    6: { x: 1, y: 1 },
+    7: { x: 1, y: -1 }
 }
+export const search_positions_labels = [0, 1, 2, 3, 4, 5, 6, 7]
 export const players = {
     BLACK: 1,
     WHITE: 2
 }
-export const max_depth = 5;
+export const max_depth = 4;
 
 export const bord_size = 3;

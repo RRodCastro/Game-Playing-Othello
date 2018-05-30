@@ -1,4 +1,4 @@
-import { search_positions, players, bord_size } from './constants';
+import { search_positions, players, bord_size, search_positions_labels } from './constants';
 
 const checkColorChange = (changeColor, board, opponent, x, y) => {
     return (!changeColor && board[x][y] === opponent);
@@ -22,18 +22,20 @@ export const parseBoard = (board) => {
     return new_board
 }
 const getNextMove = (search_position, row, column, opponent, board) => {
-    return Object.keys(search_position).filter((position) => {
-        const current = search_position[position]
-        if (!!board[row + current.x] && !!board[column + current.y]
-            && opponent === board[row + current.x][column + current.y]) {
-            return true;
+    let next_moves = [];
+    for (let move = 0; move < 8; move++) {
+        const current = search_position[move]
+        if (row + current.x < 0 || row + current.x > 7) {
+            continue;
         }
-    })
+        opponent === board[row + current.x][column + current.y] ? next_moves.push(search_positions_labels[move]) : ''
+    }
+    return next_moves;
 }
-export const getValidMoves = (array_board, player) => {
+
+export const getValidMoves = (board, player) => {
     const opponent = getOpponent(player)
     // const board = parseBoard(array_board);
-    const board = array_board
     const posible_moves = {};
     for (let row = 0; row < 8; row++) {
         for (let column = 0; column < 8; column++) {
@@ -56,46 +58,45 @@ const isLegalMove = (board, row, column, element, player, opponent) => {
     let found_move = false;
     let possible_moves = []
     if (type.length > 0) {
-        if (type.indexOf('up') > -1) {
+        if (type.indexOf(0) > -1) {
             found_move = checkUp(row, column, board, player, opponent)
-            found_move ? possible_moves.push('up') : ''
+            found_move ? possible_moves.push(0) : ''
         }
-        if (type.indexOf('down') > -1) {
+        if (type.indexOf(1) > -1) {
             found_move = checkDown(row, column, board, player, opponent)
-            found_move ? possible_moves.push('down') : ''
+            found_move ? possible_moves.push(1) : ''
         }
-        if (type.indexOf('left') > -1) {
+        if (type.indexOf(2) > -1) {
             found_move = checkLeft(row, column, board, player, opponent)
-            found_move ? possible_moves.push('left') : ''
+            found_move ? possible_moves.push(2) : ''
         }
-        if (type.indexOf('rigth') > -1) {
+        if (type.indexOf(3) > -1) {
             found_move = checkRight(row, column, board, player, opponent)
-            found_move ? possible_moves.push('rigth') : ''
+            found_move ? possible_moves.push(3) : ''
         }
-        if (type.indexOf('upper_right') > -1) {
+        if (type.indexOf(4) > -1) {
             found_move = upperRight(row, column, board, player, opponent)
-            found_move ? possible_moves.push('upper_right') : ''
+            found_move ? possible_moves.push(4) : ''
         }
 
-        if (type.indexOf('upper_left') > -1) {
+        if (type.indexOf(5) > -1) {
             found_move = upperLeft(row, column, board, player, opponent)
-            found_move ? possible_moves.push('upper_left') : ''
+            found_move ? possible_moves.push(5) : ''
         }
 
-        if (type.indexOf('bottom_right') > -1) {
+        if (type.indexOf(6) > -1) {
             found_move = bottomRight(row, column, board, player, opponent)
-            found_move ? possible_moves.push('bottom_right') : ''
+            found_move ? possible_moves.push(6) : ''
         }
 
-        if (type.indexOf('bottom_left') > -1) {
+        if (type.indexOf(7) > -1) {
             found_move = bottomLeft(row, column, board, player, opponent)
-            found_move ? possible_moves.push('bottom_left') : ''
+            found_move ? possible_moves.push(7) : ''
         }
 
     }
     return possible_moves
 }
-
 const checkDown = (row, column, board, color, opponent) => {
     let changeColor = false;
     for (let x = row + 1; x < 8; x++) {
@@ -112,10 +113,8 @@ const checkDown = (row, column, board, color, opponent) => {
 const checkUp = (row, column, board, color, opponent) => {
     let changeColor = false;
     for (let x = row - 1; x >= 0; x--) {
-        const check_empty = checkEmpty(changeColor, board, x, column, color)
-        if (check_empty) { return !check_empty }
-        const check_color = checkColor(changeColor, board, x, column, color)
-        if (check_color) { return check_color }
+        if (checkEmpty(changeColor, board, x, column, color)) { return false }
+        if (checkColor(changeColor, board, x, column, color)) { return true }
         checkColorChange(changeColor, board, opponent, x, column) ? changeColor = true : '';
     }
 
@@ -211,19 +210,16 @@ export const makeFlips = (board, valid_movement, player) => {
     let y = parseInt(position[1])
     let x = parseInt(position[0])
     const moves = valid_movement[1].split(',')
-    const moves_keys = Object.keys(search_positions)
     let flipped_positions = []
-    let flipped_board = board.slice()
-    flipped_board[x][y] = player
+    board[x][y] = player
     moves.map((move) => {
         if (move.indexOf(move) > -1) {
-            const flips = searchFlips(board, x, y, search_positions[move], player)
-            flips.map((flip) => {
-                flipped_board[flip[0]][flip[1]] = player;
+            searchFlips(board, x, y, search_positions[move], player).map((flip) => {
+                board[flip[0]][flip[1]] = player;
             })
         }
     })
-    return flipped_board
+    return board
 }
 export const totalPieces = (board, current_player) => {
     let scenarios = []
@@ -241,8 +237,47 @@ export const totalPieces = (board, current_player) => {
             }
         }
     }
-    if (opponent === 0) {
-        return 64;
+    return 100 * player / (player + opponent)
+}
+export const corners = (board, current_player) => {
+    const current_opponent = getOpponent(current_player)
+    let player = 0;
+    let opponent = 0;
+    for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
+            const element = board[i][j]
+            if (element === current_player &&
+                (i === 0 || i === 1 || i === 6 || i === 7)
+                && (j === 0 || j === 1 || j === 6 || j === 7)) {
+                player + 3
+            }
+            else if (element == current_player) {
+                player + 1;
+            }
+            if (element === current_opponent &&
+                (i === 0 || i === 1 || i === 6 || i === 7
+                    && (j === 0 || j === 1 || j === 6 || j === 7))) {
+                opponent + 3
+            }
+            else if (element === current_opponent) {
+                opponent + 1
+            }
+
+        }
     }
-    return player;
+    if (player + opponent > 0) {
+        return 100 * (player) / (player + opponent)
+    }
+    else {
+        return 0
+    }
+}
+export const mobility = (board, current_player) => {
+    const opponenet = getOpponent(current_player);
+    const player_mobility = getValidMoves(board, current_player).length;
+    const opponenet_mobility = getValidMoves(board, opponenet).length;
+    if (player_mobility + opponenet_mobility !== 0) {
+        return 100 * (player_mobility) / (player_mobility + opponenet_mobility)
+    }
+    return 0;
 }
