@@ -2,8 +2,8 @@ import io from 'socket.io-client';
 import { parseBoard } from './moves';
 import { alphaBetaSearch } from './ia';
 
-const socket = io('http://localhost:3000'),
-    userName = 'Random',
+const socket = io('http://localhost:4000'),
+    userName = 'Ghost',
     tournamentID = 142857;
 
 socket.on('connect', function () {
@@ -24,7 +24,6 @@ socket.on('ready', function (data) {
     const board = data.board;
     const movementNumber = data.movementNumber
     let new_mov;
-    new_mov = Math.floor(Math.random() * 64) + 0;
     const new_board = parseBoard(board);
     console.log(new_board)
     console.log(playerTurnID)
